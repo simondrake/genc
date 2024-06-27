@@ -15,9 +15,9 @@ import (
 )
 
 func TestDecryptPKCS7(t *testing.T) {
-	t.Run("PKCS1", func(t *testing.T) {
-		plaintext := "thisissupersecret!@$%#"
+	plaintext := "thisissupersecret!@$%#"
 
+	t.Run("PKCS1", func(t *testing.T) {
 		// Generate new Private Key
 		privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 		if err != nil {
@@ -51,6 +51,57 @@ func TestDecryptPKCS7(t *testing.T) {
 		// The actual test
 		out, err := decryptPKCS7(
 			pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}),
+			pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}),
+			true,
+			base64.StdEncoding.EncodeToString(enc),
+		)
+		if err != nil {
+			t.Errorf("decryptPKCS7 returned an error when one wasn't expected: %+v", err)
+		}
+
+		if string(out) != plaintext {
+			t.Errorf("result of decryptPKCS7 was expected to be '%s' but was '%s'", plaintext, string(out))
+		}
+	})
+	t.Run("PKCS8", func(t *testing.T) {
+		// Generate new Private Key
+		privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
+		if err != nil {
+			t.Errorf("GenerateKey returned an error when one wasn't expected: %+v", err)
+		}
+
+		// Generate a new X509 Certificate Template
+		tmpl, err := certTemplate()
+		if err != nil {
+			t.Errorf("certTemplate returned an error when one wasn't expected: %+v", err)
+		}
+
+		// Create Certificate DER
+		der, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, &privateKey.PublicKey, privateKey)
+		if err != nil {
+			t.Errorf("CreateCertificate returned an error when one wasn't expected: %+v", err)
+		}
+
+		// Convert Public Key to X509
+		x509PublicCert, err := x509.ParseCertificates(der)
+		if err != nil {
+			t.Errorf("ParseCertificate returned an error when one wasn't expected: %+v", err)
+		}
+
+		// Encrypt our plaintext value
+		enc, err := pkcs7.Encrypt([]byte(plaintext), x509PublicCert)
+		if err != nil {
+			t.Errorf("Encrypt returned an error when one wasn't expected: %+v", err)
+		}
+
+		pkcs8pk, err := x509.MarshalPKCS8PrivateKey(privateKey)
+		if err != nil {
+			t.Errorf("MarshalPKCS8PrivateKey returned an error when one wasn't expected: %+v", err)
+		}
+
+		// The actual test
+		out, err := decryptPKCS7(
+			pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: pkcs8pk}),
 			pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}),
 			true,
 			base64.StdEncoding.EncodeToString(enc),
