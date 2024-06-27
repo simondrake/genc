@@ -1,6 +1,7 @@
 package pkcs7
 
 import (
+	"crypto"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
@@ -89,7 +90,7 @@ func decryptPKCS7(privKey []byte, pubKey []byte, b64 bool, enc string) ([]byte, 
 		return nil, errors.New("unable to decode public key")
 	}
 
-	x509Priv, err := x509.ParsePKCS1PrivateKey(pemPriv.Bytes)
+	cpk, err := parsePrivateKey(pemPriv)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing private key: %w", err)
 	}
@@ -99,5 +100,16 @@ func decryptPKCS7(privKey []byte, pubKey []byte, b64 bool, enc string) ([]byte, 
 		return nil, fmt.Errorf("error parsing public key: %w", err)
 	}
 
-	return p7.Decrypt(x509Pub, x509Priv)
+	return p7.Decrypt(x509Pub, cpk)
+}
+
+func parsePrivateKey(b *pem.Block) (crypto.PrivateKey, error) {
+	switch b.Type {
+	case "RSA PRIVATE KEY":
+		return x509.ParsePKCS1PrivateKey(b.Bytes)
+	case "PRIVATE KEY":
+		return x509.ParsePKCS8PrivateKey(b.Bytes)
+	}
+
+	return nil, fmt.Errorf("unsupported private key type '%s'", b.Type)
 }
