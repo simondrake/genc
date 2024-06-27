@@ -11,6 +11,7 @@ func NewPKCS7Command() *cobra.Command {
 	}
 
 	pkcs7Cmd.AddCommand(newDecryptCommand())
+	pkcs7Cmd.AddCommand(newEncryptCommand())
 
 	return pkcs7Cmd
 }

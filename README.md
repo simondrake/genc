@@ -1,6 +1,6 @@
 # Genc
 
-Genc is a CLI tool to expose useful commands for encryption and decryption.
+Genc is a CLI tool to expose useful commands for encryption/decryption, and other security-focused operations.
 
 It is in very early development, so it comes with no assurances. It has only been tested on Ubuntu Linux. It _may_ work with your system, but it is in no way guaranteed.
 
@@ -16,3 +16,10 @@ It is in very early development, so it comes with no assurances. It has only bee
 
 # Usage
 
+TBC
+
+# TO-DO
+
+* [ ] AES-GCM
+* [ ] RC4
+* [ ] JWT?
