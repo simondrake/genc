@@ -1,15 +1,14 @@
-package pkcs7
+package rc4
 
-import (
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "pkcs7",
-		Short: "pkcs7 related commands",
+		Use:   "rc4",
+		Short: "RC4 releated commands",
 	}
 
+	cmd.AddCommand(newGenerateSecretCommand())
 	cmd.AddCommand(newDecryptCommand())
 	cmd.AddCommand(newEncryptCommand())
 

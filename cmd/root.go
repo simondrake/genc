@@ -6,7 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/simondrake/genc/cmd/aesgcm"
 	"github.com/simondrake/genc/cmd/pkcs7"
+	"github.com/simondrake/genc/cmd/rc4"
 )
 
 func Execute() {
@@ -16,7 +18,9 @@ func Execute() {
 		Long:  "Perform common encryption and decryption operations",
 	}
 
-	rootCmd.AddCommand(pkcs7.NewPKCS7Command())
+	rootCmd.AddCommand(pkcs7.NewCommand())
+	rootCmd.AddCommand(aesgcm.NewCommand())
+	rootCmd.AddCommand(rc4.NewCommand())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
