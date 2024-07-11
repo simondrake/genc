@@ -137,6 +137,4 @@ $ openssl req -newkey rsa:2048 -nodes -keyout domain.key -out domain.csr
 
 # TO-DO
 
-* [ ] AES-GCM
-* [ ] RC4
-* [ ] JWT?
+* [ ] Tests

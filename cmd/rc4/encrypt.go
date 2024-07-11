@@ -20,9 +20,6 @@ func newEncryptCommand() *cobra.Command {
 		Use:   "encrypt",
 		Short: "encrypt plaintext",
 		Long:  "encrypt plaintext value, using RC4 encryption, returning the cipher text base64 encoded",
-		Example: `
-    
-    `,
 		Run: func(cmd *cobra.Command, args []string) {
 			s, err := getSecret(secret, secretPath)
 			if err != nil {
