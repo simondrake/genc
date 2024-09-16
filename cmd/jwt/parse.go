@@ -47,31 +47,42 @@ func parseToken(token string, signingKey string, allowInvalidSigningKey bool) (*
 	tkn, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		return []byte(signingKey), nil
 	})
-
-	switch {
-	case errors.Is(err, jwt.ErrTokenSignatureInvalid):
-		if !allowInvalidSigningKey {
-			return nil, fmt.Errorf("invalid token signature: %w", err)
-		}
-		// If an invalid signing key is allowed, treat it as valid
-		return parseClaims(tkn)
-	case tkn.Valid:
-		return parseClaims(tkn)
-	case errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet):
-		fmt.Fprintln(os.Stdout, "Warning: Token is expired or not yet valid")
-		return parseClaims(tkn)
-	case errors.Is(err, jwt.ErrTokenMalformed):
-		return nil, fmt.Errorf("malformed token: %w", err)
+	if err := handleParseError(err, allowInvalidSigningKey); err != nil {
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("unexpected error: %w", err)
-}
-
-func parseClaims(tkn *jwt.Token) (*jwt.MapClaims, error) {
 	claims, ok := tkn.Claims.(jwt.MapClaims)
 	if !ok {
 		return nil, errors.New("token claim type is unexpected")
 	}
 
 	return &claims, nil
+}
+
+func handleParseError(err error, allowInvalidSigningKey bool) error {
+	if err == nil {
+		return nil
+	}
+
+	if errors.Is(err, jwt.ErrTokenExpired) {
+		fmt.Fprintln(os.Stdout, "Warning: Token is expired")
+	}
+
+	if errors.Is(err, jwt.ErrTokenNotValidYet) {
+		fmt.Fprintln(os.Stdout, "Warning: Token is not yet valid")
+	}
+
+	if errors.Is(err, jwt.ErrTokenSignatureInvalid) && !allowInvalidSigningKey {
+		return fmt.Errorf("invalid token signature: %w", err)
+	}
+
+	if errors.Is(err, jwt.ErrTokenMalformed) {
+		return fmt.Errorf("malformed token: %w", err)
+	}
+
+	if !errors.Is(err, jwt.ErrTokenExpired) && !errors.Is(err, jwt.ErrTokenNotValidYet) && !errors.Is(err, jwt.ErrTokenSignatureInvalid) {
+		return fmt.Errorf("unexpected error: %w", err)
+	}
+
+	return nil
 }

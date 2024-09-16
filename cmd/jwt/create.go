@@ -1,9 +1,9 @@
 package jwt
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/cobra"
@@ -11,9 +11,8 @@ import (
 
 func newCreateCommand() *cobra.Command {
 	var (
-		signingKey    string
-		claims        map[string]string
-		listDelimiter string
+		signingKey string
+		claims     string
 	)
 
 	// TODO: Add Signing Method flag
@@ -30,12 +29,21 @@ func newCreateCommand() *cobra.Command {
         # => sub (subject): Subject of the JWT (the user)
       # The following custom claims:
         # => groups (A list of permission groups for the user, delimited by a semi-colon)
-    $ now=$(date +%s) exp=$(date -d "+1 year" +%s); genc jwt create --signing-key "verysecret" --claims "nbf=$now,iat=$now,exp=$exp,sub=imsudonow,groups=admin;superadmin"
+    $ now=$(date +%s) exp=$(date -d "-1 month" +%s); genc jwt create --signing-key "verysecret" --claims "{\"nbf\": $now, \"iat\": $now, \"exp\": $exp, \"sub\": \"imsudonow\", \"groups\": [\"admin\", \"superadmin\"]}"
 
     # Create a jwt with no claims
     $ genc jwt create --signing-key "verysecret"`,
 		Run: func(cmd *cobra.Command, args []string) {
-			tkn := createToken(claims, listDelimiter)
+			var m map[string]interface{}
+
+			if claims != "" {
+				if err := json.Unmarshal([]byte(claims), &m); err != nil {
+					fmt.Fprintln(os.Stderr, fmt.Errorf("error parsing claims: %w", err))
+					os.Exit(1)
+				}
+			}
+
+			tkn := createToken(m)
 
 			sig, err := tkn.SignedString([]byte(signingKey))
 			if err != nil {
@@ -48,8 +56,7 @@ func newCreateCommand() *cobra.Command {
 	}
 
 	createCmd.Flags().StringVar(&signingKey, "signing-key", "", "the signing key to create the jwt with")
-	createCmd.Flags().StringVar(&listDelimiter, "list-delimiter", ";", "the delimiter to use when specifying a claim that is a list")
-	createCmd.Flags().StringToStringVar(&claims, "claims", nil, "a map of claims that the jwt should be created with")
+	createCmd.Flags().StringVar(&claims, "claims", "", "claims that the jwt should be created with")
 
 	if err := createCmd.MarkFlagRequired("signing-key"); err != nil {
 		fmt.Fprintln(os.Stderr, fmt.Errorf("internal error marking flag 'signing-key' as required: %w", err))
@@ -58,7 +65,7 @@ func newCreateCommand() *cobra.Command {
 	return createCmd
 }
 
-func createToken(claims map[string]string, delim string) *jwt.Token {
+func createToken(claims map[string]interface{}) *jwt.Token {
 	if len(claims) == 0 {
 		return jwt.New(jwt.SigningMethodHS256)
 	}
@@ -66,12 +73,7 @@ func createToken(claims map[string]string, delim string) *jwt.Token {
 	mc := jwt.MapClaims{}
 
 	for k, v := range claims {
-		if !strings.Contains(v, delim) {
-			mc[k] = v
-			continue
-		}
-
-		mc[k] = strings.Split(v, delim)
+		mc[k] = v
 	}
 
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, mc)
