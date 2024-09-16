@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/cobra"
 )
 
@@ -52,7 +52,7 @@ func newCreateCommand() *cobra.Command {
 	createCmd.Flags().StringToStringVar(&claims, "claims", nil, "a map of claims that the jwt should be created with")
 
 	if err := createCmd.MarkFlagRequired("signing-key"); err != nil {
-		fmt.Fprintln(os.Stderr, fmt.Errorf("internal error marking flag 'string' as required: %w", err))
+		fmt.Fprintln(os.Stderr, fmt.Errorf("internal error marking flag 'signing-key' as required: %w", err))
 	}
 
 	return createCmd
