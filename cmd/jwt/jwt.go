@@ -9,6 +9,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(newCreateCommand())
+	cmd.AddCommand(newParseCommand())
 
 	return cmd
 }
