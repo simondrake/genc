@@ -11,6 +11,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(newOverlapCommand())
+	cmd.AddCommand(newParseCommand())
 
 	return cmd
 }
