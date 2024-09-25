@@ -34,11 +34,11 @@ $ openssl rsa -in rsa.key -pubout -out rsa.pub
 # Create a CSR so we can sign the Certificate
 $ openssl req -key rsa.key -new -out domain.csr
 
+# !!! TODO - Fill out the information from this command with whatever details you want !!!
+
 # @@ Optional @@
 # Verify the CSR
 $ openssl req -text -in domain.csr -noout -verify
-
-# !!! TODO - Fill out the information from this command with whatever details you want !!!
 
 # Create a Self-Signed Certificate
 ## Note: The -days option specifies the number of days that the certificate will be valid.
@@ -82,11 +82,11 @@ $ openssl rsa -in rsa.key -pubout -out rsa.pub
 # Create a CSR so we can sign the Certificate
 $ openssl req -key rsa.key -new -out domain.csr
 
+# !!! TODO - Fill out the information from this command with whatever details you want !!!
+
 # @@ Optional @@
 # Verify the CSR
 $ openssl req -text -in domain.csr -noout -verify
-
-# !!! TODO - Fill out the information from this command with whatever details you want !!!
 
 # Create a Self-Signed Certificate
 ## Note: The -days option specifies the number of days that the certificate will be valid.
