@@ -70,6 +70,10 @@ func parseCIDR(cidr string) (*parseResponse, error) {
 		return nil, err
 	}
 
+	if ipnet == nil || cidr != ipnet.String() {
+		return nil, fmt.Errorf("invalid CIDR block - did you mean '%s'?", ipnet)
+	}
+
 	// Given IPv4 block 192.168.100.14/24
 	// The followings uses IPNet to get:
 	// - The routing address for the subnet (i.e. 192.168.100.0)
