@@ -12,6 +12,7 @@ import (
 	"github.com/simondrake/genc/cmd/jwt"
 	"github.com/simondrake/genc/cmd/pkcs7"
 	"github.com/simondrake/genc/cmd/rc4"
+	"github.com/simondrake/genc/cmd/version"
 )
 
 func Execute() {
@@ -21,6 +22,7 @@ func Execute() {
 		Long:  "Perform common encryption and decryption operations",
 	}
 
+	rootCmd.AddCommand(version.NewCommand())
 	rootCmd.AddCommand(pkcs7.NewCommand())
 	rootCmd.AddCommand(aesgcm.NewCommand())
 	rootCmd.AddCommand(rc4.NewCommand())
